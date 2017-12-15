@@ -20,50 +20,57 @@ pygame.display.set_caption("My awesome minesweeper")
 # Used to manage how fast the screen updates
 clock = pygame.time.Clock()
 
-# ------------------ DRAWING -----------------------------------------
-''' Function to draw the board on the screen
-'''
-def draw_board(board):
-    # Clear the screen and set the screen background
+class Game:
+    def __init__(self):
+        pygame.init()
+        self.screen = pygame.display(set_mode((260, 260)))
+        pygame.display.set_caption(TITLE)
+        self.clock = pygame.time.Clock()
+        #self.load_data()
 
-    y = MARGIN
-    for i in range(0, 10):
-        x = MARGIN
-        for j in range(0, 10):
-            if board[i][j] == 9:
-                pygame.draw.rect(screen, (255, 153, 153), [x, y, WIDTH, HEIGHT])
-                pygame.draw.rect(screen, (255, 51, 51), [x, y, WIDTH, HEIGHT], 2)
-                pygame.draw.rect(screen, (255, 0, 0), [x, y, WIDTH, HEIGHT], 1)
-            elif board[i][j] == -1:
-                pygame.draw.rect(screen, (0, 204, 0), [x, y, WIDTH, HEIGHT])
-                pygame.draw.rect(screen, DARKGREY, [x, y, WIDTH, HEIGHT], 2)
-                pygame.draw.rect(screen, DARKERGREY, [x, y, WIDTH, HEIGHT], 1)
-            else:
-                pygame.draw.rect(screen, GREY, [x, y, WIDTH, HEIGHT])
-                pygame.draw.rect(screen, DARKGREY, [x, y, WIDTH, HEIGHT], 2)
-                pygame.draw.rect(screen, DARKERGREY, [x, y, WIDTH, HEIGHT], 1)
-            x += WIDTH
-        y += HEIGHT
+    def load_data(self):
+        pass
 
+    def new(self):
+        pass
 
-''' Function to draw the menu with the set of paramaters
-'''
-def draw_menu(params):
-    pass
+    def run(self):
+        self.playing = True
+        while self.playing:
+            self.dt = self.clock.tick(FPS) / 1000.0
+            self.events()
+            self.update()
+            self.draw()
 
+    def quit(self):
+        pygame.quit()
+        sys.exit()
 
-''' Function to count number of neighboring mines of a cell
-'''
-def add_values(board):
-    ''' for each cell get all neighboring cells, count mines, assign number of mines to cell
-    '''
-    length = board.shape[0]
-    width = board.shape[1]
-    for i in range(0, length):
-        for j in range(0, width):
-            if board[i, j] != 9:
-                neighbors = get_neighbors(i, j, board)
-                board[i, j] = count_neighboring_mines(neighbors, board)
+    def update(self):
+        # self.all_sprites.update()
+        pass
+
+    def draw():
+        self.screen.fill(WHITE)
+        '''
+        for sprite in self.all_sprites:
+            self.screen.blit(sprite.image)
+        '''
+        pygame.display.flip()
+
+    def events(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.quit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == LEFT:
+                    pass
+                elif event.button == RIGHT:
+                    pass
+
+    def draw_menu(self):
+        pass
+
 
 # ---------------------------------------------------------------------------
 
@@ -82,13 +89,28 @@ while not done:
     for event in pygame.event.get(): # User did something
         if event.type == pygame.QUIT: # If user clicked close
             done = True # Flag that we are done so we exit this loop
-        elif event.type == pygame.MOUSEBUTTONDOWN and event.button == LEFT:
-            # change the board each time there is a click
-            mouse_position = tuple((int(i) for i in event.pos))
-            board.clicked(mouse_position, 'left')
-        elif event.type == pygame.MOUSEBUTTONDOWN and event.button == RIGHT:
-            mouse_position = tuple((int(i) for i in event.pos))
-            board.clicked(mouse_position, 'right')
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            if event.button == LEFT:
+                mouse_position = tuple((int(i) for i in event.pos))
+                board.clicked(mouse_position, 'left')
+            elif event.button == RIGHT:
+                mouse_position = tuple((int(i) for i in event.pos))
+                board.clicked(mouse_position, 'right')
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_1:
+                # execute helper 1: place all obvious flags
+                pass
+            elif event.key == pygame.K_2:
+                # execute helper 2: reveal all obvious tiles
+                pass
+            elif event.key == pygame.K_3:
+                # executes helper 1 and 2 repeatedly until no more flags can be placed
+                pass
+            elif event.key == pygame.K_s:
+                # execute solver to solve board
+                pass
+
+
 
     # --- Game logic should go here
 
