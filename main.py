@@ -74,11 +74,12 @@ class Game:
 
 # ---------------------------------------------------------------------------
 
-board = Board(10, 10, 10)
+board = Board(10, 10)
 
 # -------- Main Program Loop -----------
 # Loop until the user clicks the close button.
 done = False
+first_click = True
 while not done:
     # --- Main event loop
     '''
@@ -92,6 +93,13 @@ while not done:
         elif event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == LEFT:
                 mouse_position = tuple((int(i) for i in event.pos))
+                if first_click:
+                    first_click = False
+                    board.place_mines(10, mouse_position)
+                    board.add_values()
+                    print("-----")
+                    print(board)
+
                 board.clicked(mouse_position, 'left')
             elif event.button == RIGHT:
                 mouse_position = tuple((int(i) for i in event.pos))

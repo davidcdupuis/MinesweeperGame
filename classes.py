@@ -94,12 +94,15 @@ class Board:
         '''
           Use random.sample() to place mines
         '''
-        rows = int(self.height)
-        columns = int(self.width)
-        sample = random.sample(xrange(0,rows*columns), mines)
+        if exception: # exception is a tuple containing the position of the tile to be avoided
+            except_val = exception[0] * self.width + exception[1]
+        if mines < self.height * self.width:
+            sample = random.sample([i for i in range(0, self.height * self.width) if i != except_val], mines)
+        else:
+            print("Error: Sample larger than population!")
         for val in sample:
-            i = val / columns
-            j = val % columns
+            i = val / self.width
+            j = val % self.width
             self.board[i][j].value = 9
 
     def add_values(self):
