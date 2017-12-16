@@ -10,18 +10,18 @@ from settings import *
                 revealed = True/false
 '''
 class Tile:
-    def __init__(self, val = 0):
+    def __init__(self, val = 0, prob = None):
         self.value = val
         self.revealed = False
         self.flagged = False
         self.questioned = False
-        self.probability = None # holds probability of mine being in tile
+        self.probability = prob # holds probability of mine being in tile
         self.row = 0
         self.column = 0
 
     ''' Function to manage tile drawing onto screen
     '''
-    def draw(self, screen, x, y):
+    def draw(self, screen, x, y, prob = False):
         if self.revealed:
             if self.value == 9:
                 #screen.blit(MINE, [x, y, w, h])
@@ -55,9 +55,17 @@ class Tile:
             pygame.draw.rect(screen, DARKERGREY, [x, y, WIDTH, HEIGHT], 1)
             screen.blit(text, [x + 5, y, WIDTH, HEIGHT])
         else:
-            pygame.draw.rect(screen, GREY, [x, y, WIDTH, HEIGHT])
-            pygame.draw.rect(screen, DARKGREY, [x, y, WIDTH, HEIGHT], 2)
-            pygame.draw.rect(screen, DARKERGREY, [x, y, WIDTH, HEIGHT], 1)
+            if prob:
+                font = pygame.font.SysFont(FONT, 30, True, False)
+                text = font.render('{0}%'.format((self.probability, '-')[not self.probability]), True, BLACK)
+                pygame.draw.rect(screen, GREY, [x, y, WIDTH, HEIGHT])
+                pygame.draw.rect(screen, DARKGREY, [x, y, WIDTH, HEIGHT], 2)
+                pygame.draw.rect(screen, DARKERGREY, [x, y, WIDTH, HEIGHT], 1)
+                screen.blit(text, [x + 2, y + 10, WIDTH, HEIGHT])
+            else:
+                pygame.draw.rect(screen, GREY, [x, y, WIDTH, HEIGHT])
+                pygame.draw.rect(screen, DARKGREY, [x, y, WIDTH, HEIGHT], 2)
+                pygame.draw.rect(screen, DARKERGREY, [x, y, WIDTH, HEIGHT], 1)
 
     def __str__(self):
         return "[ {0} ]".format(self.value)
@@ -71,6 +79,9 @@ class Board:
         self.board = [[Tile(0) for j in range(width)] for i in range(height)]
         self.width = width
         self.height = height
+        self.helperProb = False
+        self.mines = None
+        self.tiles = width * height
         if mines:
             self.place_mines(mines)
             self.add_values()
@@ -83,7 +94,7 @@ class Board:
         for row in range(self.height):
             x = MARGIN
             for column in range(self.width):
-                self.board[row][column].draw(screen, x, y) # draw tile
+                self.board[row][column].draw(screen, x, y, self.helperProb) # draw tile
                 x += WIDTH
             y += HEIGHT
 
@@ -94,6 +105,7 @@ class Board:
         '''
           Use random.sample() to place mines
         '''
+        self.mines = mines
         if exception: # exception is a tuple containing the position of the tile to be avoided
             except_val = exception[0] * self.width + exception[1]
         if mines < self.height * self.width:
@@ -111,6 +123,7 @@ class Board:
                 if self.board[i][j].value != 9:
                     neighbors = self.get_neighbors(i, j)
                     self.board[i][j].value = self.count_neighboring_mines(neighbors)
+                    self.board[i][j].probability = round(float(self.mines) / self.tiles * 100.0, 1)
 
     def get_neighbors(self, row, col):
         # for a given cell return neighbors
@@ -178,6 +191,97 @@ class Board:
             elif self.board[neighbor[0]][neighbor[1]].value == 0 and self.board[neighbor[0]][neighbor[1]].revealed == False:
                 self.board[neighbor[0]][neighbor[1]].revealed = True
                 self.automatic_reveal(neighbor[0], neighbor[1])
+
+    def get_frontier(self):
+        # gets all the Tiles that are at a boarder
+        pass
+
+    def compute_probability(self):
+        # compute the probability of a mine in adjacent tiles
+        '''
+            Check if tile and neighboring Tiles follow a pattern:
+            |     |     |     |
+            |     |  T  |     |
+            |     |     |     |
+        '''
+        for row in self.height:
+            for col in self.width:
+                tile = self.board[row][col]
+                if self.board[row - 1][col].revealed  and self.board[row + 1][col].revealed and self.board[row - 1][col - 1].revealed and self.board[row + 1][col - 1]:
+                    '''
+                    |  O  |  O  |  F  |
+                    |  O  |  T  |  F  |
+                    |  O  |  O  |  F  |
+                    '''
+                    if tile.value == 2:
+                        self.board[row - 1][col + 1].probability = 100
+                        self.board[row + 1][col + 1].probability = 100
+                    elif tile.value == 3:
+                        self.board[row - 1][col + 1].probability = 100
+                        self.board[row][col + 1].probability = 100
+                        self.board[row + 1][col + 1].probability = 100
+                elif self.board[row - 1][col].revealed  and self.board[row + 1][col].revealed and self.board[row - 1][col + 1].revealed and self.board[row + 1][col + 1]:
+                    '''
+                    |  F  |  O  |  O  |
+                    |  F  |  T  |  O  |
+                    |  F  |  O  |  O  |
+                    '''
+                    if tile.value == 2:
+                        self.board[row - 1][col + 1].probability = 100
+                        self.board[row + 1][col + 1].probability = 100
+                    elif tile.value == 3:
+                        self.board[row - 1][col + 1].probability = 100
+                        self.board[row][col + 1].probability = 100
+                        self.board[row + 1][col + 1].probability = 100
+                elif self.board[row - 1][col].revealed  and self.board[row + 1][col].revealed and self.board[row - 1][col + 1].revealed and self.board[row + 1][col + 1]:
+                    '''
+                    |  O  |  O  |  O  |
+                    |  O  |  T  |  O  |
+                    |  F  |  F  |  F  |
+                    '''
+                    if tile.value == 2:
+                        self.board[row - 1][col + 1].probability = 100
+                        self.board[row + 1][col + 1].probability = 100
+                    elif tile.value == 3:
+                        self.board[row - 1][col + 1].probability = 100
+                        self.board[row][col + 1].probability = 100
+                        self.board[row + 1][col + 1].probability = 100
+                elif self.board[row - 1][col].revealed  and self.board[row + 1][col].revealed and self.board[row - 1][col + 1].revealed and self.board[row + 1][col + 1]:
+                    '''
+                    |  F  |  F  |  F  |
+                    |  O  |  T  |  O  |
+                    |  O  |  O  |  O  |
+                    '''
+                    if tile.value == 2:
+                        self.board[row - 1][col + 1].probability = 100
+                        self.board[row + 1][col + 1].probability = 100
+                    elif tile.value == 3:
+                        self.board[row - 1][col + 1].probability = 100
+                        self.board[row][col + 1].probability = 100
+                        self.board[row + 1][col + 1].probability = 100
+
+    def helper1(self):
+        # flag all obvious tiles
+        pass
+
+    def helper2(self):
+        # reveal all obvious Tiles
+        pass
+
+    def helper3(self):
+        # repeatedly do helper1 and helper2
+        pass
+
+    def helper4(self):
+        # displays probability of tiles having a mine
+        if not self.helperProb:
+            self.helperProb = True
+        else:
+            self.helperProb = False
+
+    def solver(self):
+        # solves the minesweeper game
+        pass
 
     def __str__(self):
         s = ""

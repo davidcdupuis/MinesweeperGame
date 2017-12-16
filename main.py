@@ -11,7 +11,7 @@ from classes import Board
 # initialize the game engine
 pygame.init()
 
-size = (260, 260)
+size = (SCREEN_WIDTH, SCREEN_HEIGHT)
 screen = pygame.display.set_mode(size)
 
 # screen title
@@ -114,9 +114,15 @@ while not done:
             elif event.key == pygame.K_3:
                 # executes helper 1 and 2 repeatedly until no more flags can be placed
                 pass
+            elif event.key == pygame.K_4:
+                board.helper4()
             elif event.key == pygame.K_s:
                 # execute solver to solve board
                 pass
+            elif event.key == pygame.K_n:
+                # start new game
+                board = Board(10, 10)
+                first_click = True
 
 
 

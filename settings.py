@@ -15,9 +15,13 @@ DARKERGREY  = ( 64, 64, 64)
 DARKGREY    = ( 128, 128, 128)
 GREY        = ( 192, 192, 192)
 
+# Screen dimensions
+SCREEN_WIDTH = 260 * 2
+SCREEN_HEIGHT = 260 * 2
+
 # Tile dimensions
-WIDTH  = 25
-HEIGHT = 25
+WIDTH  = 25 * 2
+HEIGHT = 25 * 2
 MARGIN = 5
 TILETEXT = 25
 
